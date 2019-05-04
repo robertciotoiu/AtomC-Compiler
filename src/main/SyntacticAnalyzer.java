@@ -97,6 +97,7 @@ public class SyntacticAnalyzer {
 					this.i++;
 					i = this.i;
 				} else {
+					this.i = i;//not sure
 					state = 2;
 				}
 				break;
@@ -106,6 +107,7 @@ public class SyntacticAnalyzer {
 					this.i++;
 					i = this.i;
 				} else {
+					this.i = i;//not sure
 					state = 3;
 				}
 				break;
@@ -115,6 +117,7 @@ public class SyntacticAnalyzer {
 					this.i++;
 					i = this.i;
 				} else {
+					this.i = i;//not sure
 					state = 4;
 				}
 				break;
@@ -160,7 +163,11 @@ public class SyntacticAnalyzer {
 					state = 3;
 					i++;
 					this.i = i;
-				} else {
+				} else if(tokens.get(i).getTokenType().equals(TokenType.Identifier))
+				{
+					return false;
+				}
+				else{
 					throw new AnalyzerException("Expected OpeningCurlyBrace", tokens.get(i).getBegin());
 				}
 				break;
@@ -179,8 +186,8 @@ public class SyntacticAnalyzer {
 				break;
 			case 4:
 				if (tokens.get(i).getTokenType().equals(TokenType.Semicolon)) {
-					i++;
-					this.i = i;
+//					i++;
+//					this.i = i;
 					return true;
 				} else {
 					throw new AnalyzerException("Expected Semicolon", tokens.get(i).getBegin());
@@ -230,8 +237,8 @@ public class SyntacticAnalyzer {
 					i++;
 					this.i = i;
 				} else if (tokens.get(i).getTokenType().equals(TokenType.Semicolon)) {
-					i++;
-					this.i = i;
+//					i++;
+//					this.i = i;
 					return true;
 				} else {
 					throw new AnalyzerException("Expected , or ; at: ", tokens.get(i).getBegin());
@@ -268,29 +275,35 @@ public class SyntacticAnalyzer {
 			case 0:
 				if (tokens.get(i).getTokenType().equals(TokenType.Int)) {
 					state = 1;
-					i++;
-					this.i = i;
+//					i++;
+//					this.i = i;
+					return true;
 				} else if (tokens.get(i).getTokenType().equals(TokenType.Double)) {
 					state = 1;
-					i++;
-					this.i = i;
+//					i++;
+//					this.i = i;
+					return true;
 				} else if (tokens.get(i).getTokenType().equals(TokenType.Char)) {
 					state = 1;
-					i++;
-					this.i = i;
+//					i++;
+//					this.i = i;
+					return true;
 				} else if (tokens.get(i).getTokenType().equals(TokenType.Struct)) {
 					state = 1;
 					i++;
 					this.i = i;
-				} else {
-					throw new AnalyzerException("Expected INT | DOUBLE | CHAR | STRUCT at: ", tokens.get(i).getBegin());
-				}
-				break;
-			case 1:
-				if (tokens.get(i).getTokenType().equals(TokenType.Identifier)) {
-					this.i = i;
 					return true;
 				} else {
+					return false;
+					//throw new AnalyzerException("Expected INT | DOUBLE | CHAR | STRUCT at: ", tokens.get(i).getBegin());
+				}
+			case 1:
+				if(tokens.get(i).getTokenType().equals(TokenType.Identifier))
+				{
+					return true;
+				}
+				else
+				{
 					throw new AnalyzerException("Expected Identifier at: ", tokens.get(i).getBegin());
 				}
 			}
@@ -402,7 +415,8 @@ public class SyntacticAnalyzer {
 					i++;
 					this.i = i;
 				} else {
-					throw new AnalyzerException("Expected Identifier at: ", tokens.get(i).getBegin());
+					return false;
+					//throw new AnalyzerException("Expected Identifier at: ", tokens.get(i).getBegin());
 				}
 				break;
 			case 4:
@@ -447,8 +461,8 @@ public class SyntacticAnalyzer {
 				break;
 			case 8:
 				if (stmCompound(i)) {
-					this.i++;
-					i = this.i;
+//					this.i++;
+//					i = this.i;
 					return true;
 				} else {
 					throw new AnalyzerException("Expected stmCompound at: ", tokens.get(i).getBegin());
@@ -1365,6 +1379,8 @@ public class SyntacticAnalyzer {
 			}
 		}
 	}
+	
+				
 
 	public boolean exprPrimary(int i) throws AnalyzerException {
 		/*
