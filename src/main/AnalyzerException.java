@@ -11,15 +11,16 @@ public class AnalyzerException extends Exception {
 	}
 
 	public AnalyzerException(String message, int errorPosition) {
-		this.message = message;
+
 		this.errorPosition = errorPosition;
-		
+		this.message = message;
+
 	}
-	
-	public AnalyzerException(String string) {
-		// TODO Auto-generated constructor stub
-		this.message = string;
-	}
+
+	 public AnalyzerException(String string) {
+	 // TODO Auto-generated constructor stub
+	 this.message = string;
+	 }
 
 	public int getErrorPosition() {
 		return errorPosition;
