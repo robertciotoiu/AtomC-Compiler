@@ -257,8 +257,8 @@ public class SyntacticAnalyzer {
 					i = consume();
 				} else {
 					state = 2;
-					
-					//i = consume();
+
+					// i = consume();
 					// throw new AnalyzerException("Expected expr at: "+ tokens.get(i).getBegin()+"
 					// and at token: " +i);
 				}
@@ -767,9 +767,8 @@ public class SyntacticAnalyzer {
 				if (tokens.get(i).getTokenType().equals(TokenType.Semicolon)) {
 					return true;
 				} else {
-					return false;
-					// throw new AnalyzerException("Expected Semicolon at: "+
-					// tokens.get(i).getBegin()+" and at token: " +i);
+					//return false;
+					 throw new AnalyzerException("Expected Semicolon at: "+ tokens.get(i).getBegin()+" and at token: " +i);
 				}
 			}
 		}
@@ -814,35 +813,29 @@ public class SyntacticAnalyzer {
 	}
 
 	public boolean expr(int i) throws AnalyzerException {
-		int state = 0;
-		while (true) {
-			switch (state) {
-			case 0:
-				if (exprAssign(i)) {
-					return true;
-				} else {
-					return false;
-				}
-			}
+		if (exprAssign(i)) {
+			return true;
+		} else {
+			return false;
 		}
 	}
+
 
 	public boolean exprAssign(int i) throws AnalyzerException {
 		// exprAssign: exprUnary ASSIGN exprAssign | exprOr ;
 		int state = 0;
-		int i_branch2=0;
+		int i_branch2 = 0;
 		while (true) {
 			switch (state) {
-			case 0:
-			{
-				i_branch2 = this.i;
+			case 0: {
+				// i_branch2 = this.i;
 				if (exprUnary(i)) {
+					i_branch2 = i;
+					
 					state = 1;
 					i = consume();
 				} else {
 					state = 3;
-					// throw new AnalyzerException("Expected exprUnary at: ",
-					// tokens.get(i).getBegin());
 				}
 				break;
 			}
@@ -851,12 +844,9 @@ public class SyntacticAnalyzer {
 					state = 2;
 					i = consume();
 				} else {
-					//i = backup_i;
 					state = 3;// is exprOr
-					this.i = i_branch2;
-					i = this.i;
-					// throw new AnalyzerException("Expected Equal at: "+ tokens.get(i).getBegin()+"
-					// and at token: " +i);
+					i = i_branch2;
+					this.i = i;
 				}
 				break;
 			case 2:
@@ -958,12 +948,14 @@ public class SyntacticAnalyzer {
 		 * exprPrimary: ID ( LPAR ( expr ( COMMA expr )* )? RPAR )? | CT_INT | CT_REAL |
 		 * CT_CHAR | CT_STRING | LPAR expr RPAR ;
 		 */
+		int i_backup = 0;
 		int state = 0;
 		while (true) {
 			switch (state) {
 			case 0:
 				if (tokens.get(i).getTokenType().equals(TokenType.Identifier)) {
 					state = 1;
+					i_backup = i;
 					i = consume();
 				} else if (tokens.get(i).getTokenType().equals(TokenType.IntConstant)) {
 					return true;
@@ -980,7 +972,7 @@ public class SyntacticAnalyzer {
 				else if (tokens.get(i).getTokenType().equals(TokenType.OpenBrace)) {
 					state = 6;
 					i = consume();
-				} else {
+				} else {					
 					return false;// not sure if not to throw an exception
 					// throw new AnalyzerException(
 					// "Expected Identifier | IntConstant | DoubleConstant | CharConstant |
@@ -990,10 +982,18 @@ public class SyntacticAnalyzer {
 				break;
 			case 1:
 				if (tokens.get(i).getTokenType().equals(TokenType.OpenBrace)) {
+					i_backup = i;
 					i = consume();
 					state = 2;
 				} else {
+					//if(i_backup!=0 && (tokens.get(i+1).getTokenType().equals(TokenType.Semicolon) ||tokens.get(i+1).getTokenType().equals(TokenType.Equal)))
+					if(i_backup!=0)
+					{
+					 i = i_backup;
+					 this.i = i_backup;//this may not work #prettysure ,maybe I should add i = i_backup
 					return true;
+					}
+					return false;
 				}
 				break;
 			case 2:
@@ -1002,6 +1002,10 @@ public class SyntacticAnalyzer {
 					i = consume();
 				} else {
 					state = 3;
+					if(i_backup!=0)
+					{
+						this.i = i_backup;
+					}
 				}
 				break;
 			case 3:
@@ -1024,6 +1028,28 @@ public class SyntacticAnalyzer {
 							"Expected expr at: " + tokens.get(i).getBegin() + " and at token: " + i);
 				}
 				break;
+			case 6:
+				if(expr(i))
+				{
+					state = 7;
+					i = consume();
+				}
+				else
+				{
+					throw new AnalyzerException(
+							"Expected expr at: " + tokens.get(i).getBegin() + " and at token: " + i);
+				}
+				break;
+			case 7:
+				if(tokens.get(i).getTokenType().equals(TokenType.CloseBrace))
+				{
+					return true;
+				}
+				else
+				{
+					throw new AnalyzerException(
+							"Expected expr at: " + tokens.get(i).getBegin() + " and at token: " + i);
+				}
 			}
 		}
 	}
