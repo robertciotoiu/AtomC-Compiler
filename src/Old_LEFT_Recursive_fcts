@@ -1,0 +1,190 @@
+//OLD LEFT RECURSION FUNCTIONS
+
+	public boolean exprOr(int i) throws AnalyzerException {
+		if (!exprAnd(i))
+			return false;
+		exprOr1(i);
+		return true;
+	}
+
+	public void exprOr1(int i) throws AnalyzerException {
+		if (tokens.get(i).getTokenType().equals(TokenType.Or)) {
+			i = consume();
+			if (!exprAnd(i))
+				throw new AnalyzerException("Expected exprAnd at: " + tokens.get(i).getBegin() + " and at token: " + i);
+			exprOr1(i);
+		}
+	}
+
+	public boolean exprAnd(int i) throws AnalyzerException {
+		if (!exprEq(i))
+			return false;
+		exprAnd1(i);
+		return true;
+	}
+
+	public void exprAnd1(int i) throws AnalyzerException {
+		if (tokens.get(i).getTokenType().equals(TokenType.And)) {
+			i = consume();
+			if (!exprEq(i))
+				throw new AnalyzerException("Expected exprEq at: " + tokens.get(i).getBegin() + " and at token: " + i);
+			exprOr1(i);
+		}
+	}
+
+	public boolean exprEq(int i) throws AnalyzerException {
+		if (!exprRel(i))
+			return false;
+		exprEq1(i);
+		return true;
+	}
+
+	public void exprEq1(int i) throws AnalyzerException {
+		if (tokens.get(i).getTokenType().equals(TokenType.Equal)) {
+			i = consume();
+		} else if (tokens.get(i).getTokenType().equals(TokenType.ExclameEqual)) {
+			i = consume();
+		} else
+			return;
+		if (!exprRel(i))
+			throw new AnalyzerException("Expected exprRel at: " + tokens.get(i).getBegin() + " and at token: " + i);
+		exprEq1(i);
+	}
+
+	public boolean exprRel(int i) throws AnalyzerException {
+		if (!exprAdd(i))
+			return false;
+		exprRel1(i);
+		return true;
+	}
+
+	public void exprRel1(int i) throws AnalyzerException {
+		if (tokens.get(i).getTokenType().equals(TokenType.Less)) {
+			i = consume();
+		} else if (tokens.get(i).getTokenType().equals(TokenType.LessEqual)) {
+			i = consume();
+		} else if (tokens.get(i).getTokenType().equals(TokenType.Greater)) {
+			i = consume();
+		} else if (tokens.get(i).getTokenType().equals(TokenType.GreaterEqual)) {
+			i = consume();
+		} else
+			return;
+		if (!exprAdd(i))
+			throw new AnalyzerException("Expected exprAdd at: " + tokens.get(i).getBegin() + " and at token: " + i);
+		exprRel1(i);
+	}
+
+	public boolean exprAdd(int i) throws AnalyzerException {
+		if (!exprMul(i))
+			return false;
+		exprAdd1(i);
+		return true;
+	}
+
+	public void exprAdd1(int i) throws AnalyzerException {
+		if (tokens.get(i).getTokenType().equals(TokenType.Plus)) {
+			i = consume();
+		} else if (tokens.get(i).getTokenType().equals(TokenType.Minus)) {
+			i = consume();
+		} else
+			return;
+		if (!exprMul(i))
+			throw new AnalyzerException("Expected exprMul at: " + tokens.get(i).getBegin() + " and at token: " + i);
+		exprAdd1(i);
+	}
+
+	public boolean exprMul(int i) throws AnalyzerException {
+		if (!exprCast(i))
+			return false;
+		exprMul1(i);
+		return true;
+	}
+
+	public void exprMul1(int i) throws AnalyzerException {
+		if (tokens.get(i).getTokenType().equals(TokenType.Multiply)) {
+			i = consume();
+		} else if (tokens.get(i).getTokenType().equals(TokenType.Divide)) {
+			i = consume();
+		} else
+			return;
+		if (!exprCast(i))
+			throw new AnalyzerException("Expected exprCast at: " + tokens.get(i).getBegin() + " and at token: " + i);
+		exprMul1(i);
+	}
+
+	public boolean exprPostfix(int i) throws AnalyzerException {
+		if (!exprPrimary(i))
+			return false;
+		exprPostfix1();
+		return true;
+	}
+
+	public void exprPostfix1() throws AnalyzerException {
+		if (tokens.get(i).getTokenType().equals(TokenType.OpenStraightBrace)) {
+			if (!expr(i))
+				throw new AnalyzerException(
+						"Expected exprCast at: " + tokens.get(i).getBegin() + " and at token: " + i);
+			if (!tokens.get(i).getTokenType().equals(TokenType.CloseStraightBrace))
+				throw new AnalyzerException(
+						"Expected exprCast at: " + tokens.get(i).getBegin() + " and at token: " + i);
+			else
+				i = consume();
+		} else if (tokens.get(i).getTokenType().equals(TokenType.Dot)) {
+			if (!tokens.get(i).getTokenType().equals(TokenType.Identifier))
+				throw new AnalyzerException(
+						"Expected exprCast at: " + tokens.get(i).getBegin() + " and at token: " + i);
+			else
+				i = consume();
+		} else
+			return;
+		exprPostfix1();
+	}
+ /*
+	public boolean exprPrimary(int i) throws AnalyzerException {
+		// Token *startTk = crtTk;
+		int i_backup = i;
+		if (tokens.get(i).getTokenType().equals(TokenType.Identifier)) {
+			i = consume();
+			if (tokens.get(i).getTokenType().equals(TokenType.OpenBrace)) {
+				i = consume();
+				if (expr(i)) {
+					while (true) {
+						//i = consume();
+						if (!tokens.get(i).getTokenType().equals(TokenType.Comma)) {
+							i = consume();
+							break;
+						}
+						if (!expr(i))
+							throw new AnalyzerException(
+									"Expected expr at: " + tokens.get(i).getBegin() + " and at token: " + i);
+					}
+				}
+				i = consume();
+				if (!tokens.get(i).getTokenType().equals(TokenType.CloseBrace)) {
+					throw new AnalyzerException(
+							"Expected OpenBrace at: " + tokens.get(i).getBegin() + " and at token: " + i);
+				}
+			}
+		} else if (tokens.get(i).getTokenType().equals(TokenType.IntConstant)) {
+			i = consume();
+		} else if (tokens.get(i).getTokenType().equals(TokenType.DoubleConstant)) {
+			i = consume();
+		} else if (tokens.get(i).getTokenType().equals(TokenType.CharConstant)) {
+			i = consume();
+		} else if (tokens.get(i).getTokenType().equals(TokenType.OpenBrace)) {
+			i = consume();
+
+			if (!expr(i)) {
+				this.i = i_backup;
+				i = this.i;
+				return false;
+			}
+			i = consume();
+			if (!tokens.get(i).getTokenType().equals(TokenType.OpenBrace))
+				throw new AnalyzerException(
+						"Expected OpenBrace at: " + tokens.get(i).getBegin() + " and at token: " + i);
+		} else
+			return false;
+		return true;
+	}
+	*/

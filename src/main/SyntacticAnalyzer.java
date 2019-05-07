@@ -82,8 +82,7 @@ public class SyntacticAnalyzer {
 			case 1:
 				if (tokens.get(i).getTokenType().equals(TokenType.Identifier)) {
 					state = 2;
-					i++;
-					this.i = i;
+					i = consume();
 				} else {
 					throw new AnalyzerException(
 							"Expected Identifier" + tokens.get(i).getBegin() + " and at token: " + i);
@@ -92,8 +91,7 @@ public class SyntacticAnalyzer {
 			case 2:
 				if (tokens.get(i).getTokenType().equals(TokenType.OpeningCurlyBrace)) {
 					state = 3;
-					i++;
-					this.i = i;
+					i = consume();
 				} else if (tokens.get(i).getTokenType().equals(TokenType.Identifier)) {
 					return false;
 				} else {
@@ -104,12 +102,10 @@ public class SyntacticAnalyzer {
 			case 3:
 				if (declVar(i)) {
 					state = 3;
-					this.i++;
-					i = this.i;
+					// i = consume();
 				} else if (tokens.get(i).getTokenType().equals(TokenType.ClosingCurlyBrace)) {
 					state = 4;
-					i++;
-					this.i = i;
+					i = consume();
 				} else {
 					throw new AnalyzerException(
 							"Expected ClosingCurlyBrace" + tokens.get(i).getBegin() + " and at token: " + i);
@@ -166,8 +162,6 @@ public class SyntacticAnalyzer {
 					state = 4;
 					i = consume();
 				} else if (tokens.get(i).getTokenType().equals(TokenType.Semicolon)) {
-					// i++;
-					// this.i = i;
 					return true;
 				} else {
 					throw new AnalyzerException(
@@ -219,7 +213,7 @@ public class SyntacticAnalyzer {
 					return true;
 				} else if (tokens.get(i).getTokenType().equals(TokenType.Struct)) {
 					state = 1;
-					i++;
+					// i++;
 				} else {
 					return false;
 					// throw new AnalyzerException("Expected INT | DOUBLE | CHAR | STRUCT at: ",
@@ -630,7 +624,8 @@ public class SyntacticAnalyzer {
 				}
 				break;
 			case 2:
-				if (expr(i)) {
+				if (expr(i)) {// aici in caz de i = 10 noua ne parcurge doar i si se intoarce la = si aici se
+								// mai incrementeaza si dupa asteapta ;
 					state = 3;
 					i = consume();
 				} else {
@@ -650,6 +645,7 @@ public class SyntacticAnalyzer {
 				if (expr(i)) {
 					state = 5;
 					i = consume();
+					// i = this.i;
 				} else {
 					state = 5;
 				}
@@ -767,8 +763,10 @@ public class SyntacticAnalyzer {
 				if (tokens.get(i).getTokenType().equals(TokenType.Semicolon)) {
 					return true;
 				} else {
-					//return false;
-					 throw new AnalyzerException("Expected Semicolon at: "+ tokens.get(i).getBegin()+" and at token: " +i);
+					return false;
+					// throw new AnalyzerException(
+					// "Expected Semicolon at: " + tokens.get(i).getBegin() + " and at token: " +
+					// i);
 				}
 			}
 		}
@@ -820,7 +818,6 @@ public class SyntacticAnalyzer {
 		}
 	}
 
-
 	public boolean exprAssign(int i) throws AnalyzerException {
 		// exprAssign: exprUnary ASSIGN exprAssign | exprOr ;
 		int state = 0;
@@ -831,9 +828,11 @@ public class SyntacticAnalyzer {
 				// i_branch2 = this.i;
 				if (exprUnary(i)) {
 					i_branch2 = i;
-					
+
 					state = 1;
-					i = consume();
+					i = this.i;
+					// i = consume();//this is the problem!!!!!! it increments when it comes from
+					// exprUnary and also here
 				} else {
 					state = 3;
 				}
@@ -845,8 +844,8 @@ public class SyntacticAnalyzer {
 					i = consume();
 				} else {
 					state = 3;// is exprOr
-					i = i_branch2;
-					this.i = i;
+					// i = i_branch2;
+					// this.i = i;
 				}
 				break;
 			case 2:
@@ -857,7 +856,7 @@ public class SyntacticAnalyzer {
 							"Expected exprAssign at: " + tokens.get(i).getBegin() + " and at token: " + i);
 				}
 			case 3:
-				if (exprOr(i)) {
+				if (exprOr(i)) {// aici e problema din for cand da expceptie la <
 					return true;
 				} else {
 					return false;
@@ -949,6 +948,7 @@ public class SyntacticAnalyzer {
 		 * CT_CHAR | CT_STRING | LPAR expr RPAR ;
 		 */
 		int i_backup = 0;
+		boolean semafor;
 		int state = 0;
 		while (true) {
 			switch (state) {
@@ -972,29 +972,32 @@ public class SyntacticAnalyzer {
 				else if (tokens.get(i).getTokenType().equals(TokenType.OpenBrace)) {
 					state = 6;
 					i = consume();
-				} else {					
-					return false;// not sure if not to throw an exception
+				} else {
+					return false;// $hashtag not sure here
 					// throw new AnalyzerException(
-					// "Expected Identifier | IntConstant | DoubleConstant | CharConstant |
-					// StringConstant | OpenBrace at: ",
-					// tokens.get(i).getBegin());
+					// "Expected Comma | CloseBrace at: " + tokens.get(i).getBegin() + " and at
+					// token: " + i);
 				}
 				break;
 			case 1:
 				if (tokens.get(i).getTokenType().equals(TokenType.OpenBrace)) {
-					i_backup = i;
-					i = consume();
+					// i_backup = i;
+					// i = consume();
+					// state = 2;
+					// } else {
+					// //if(i_backup!=0 &&
+					// (tokens.get(i+1).getTokenType().equals(TokenType.Semicolon)
+					// ||tokens.get(i+1).getTokenType().equals(TokenType.Equal)))
+					// if(i_backup!=0)
+					// {
+					// //i = i_backup;
+					// //this.i = i_backup;//this may not work #prettysure ,maybe I should add i =
+					// i_backup
+					// return true;
+					// }
 					state = 2;
-				} else {
-					//if(i_backup!=0 && (tokens.get(i+1).getTokenType().equals(TokenType.Semicolon) ||tokens.get(i+1).getTokenType().equals(TokenType.Equal)))
-					if(i_backup!=0)
-					{
-					 i = i_backup;
-					 this.i = i_backup;//this may not work #prettysure ,maybe I should add i = i_backup
+				} else
 					return true;
-					}
-					return false;
-				}
 				break;
 			case 2:
 				if (expr(i)) {
@@ -1002,8 +1005,7 @@ public class SyntacticAnalyzer {
 					i = consume();
 				} else {
 					state = 3;
-					if(i_backup!=0)
-					{
+					if (i_backup != 0) {
 						this.i = i_backup;
 					}
 				}
@@ -1029,24 +1031,18 @@ public class SyntacticAnalyzer {
 				}
 				break;
 			case 6:
-				if(expr(i))
-				{
+				if (expr(i)) {
 					state = 7;
 					i = consume();
-				}
-				else
-				{
+				} else {
 					throw new AnalyzerException(
 							"Expected expr at: " + tokens.get(i).getBegin() + " and at token: " + i);
 				}
 				break;
 			case 7:
-				if(tokens.get(i).getTokenType().equals(TokenType.CloseBrace))
-				{
+				if (tokens.get(i).getTokenType().equals(TokenType.CloseBrace)) {
 					return true;
-				}
-				else
-				{
+				} else {
 					throw new AnalyzerException(
 							"Expected expr at: " + tokens.get(i).getBegin() + " and at token: " + i);
 				}
@@ -1055,142 +1051,382 @@ public class SyntacticAnalyzer {
 	}
 
 	public boolean exprOr(int i) throws AnalyzerException {
-		if (!exprAnd(i))
-			return false;
-		exprOr1(i);
-		return true;
+		int state = 0;
+		while (true) {
+			switch (state) {
+			case 0:
+				if (exprAnd(i)) {
+					// i = consume();
+					return true;
+				} else {
+					state = 1;
+				}
+				break;
+			case 1:
+				if (exprOr1(i))
+					return true;
+				else
+					return false;
+				// break;
+			}
+		}
 	}
 
-	public void exprOr1(int i) throws AnalyzerException {
-		if (tokens.get(i).getTokenType().equals(TokenType.Or)) {
-			i = consume();
-			if (!exprAnd(i))
-				throw new AnalyzerException("Expected exprAnd at: " + tokens.get(i).getBegin() + " and at token: " + i);
-			exprOr1(i);
+	public boolean exprOr1(int i) throws AnalyzerException {
+		int state = 0;
+		while (true) {
+			switch (state) {
+			case 0:
+				if (tokens.get(i).getTokenType().equals(TokenType.Or)) {
+					state = 1;
+					i = consume();
+				} else {
+					return false;
+				}
+				break;
+			case 1:
+				if (exprAnd(i)) {
+					exprOr1(i);
+				} else
+					throw new AnalyzerException(
+							"Expected exprAnd at: " + tokens.get(i).getBegin() + " and at token: " + i);
+			}
 		}
 	}
 
 	public boolean exprAnd(int i) throws AnalyzerException {
-		if (!exprEq(i))
-			return false;
-		exprAnd1(i);
-		return true;
+		int state = 0;
+		while (true) {
+			switch (state) {
+			case 0:
+				if (exprEq(i)) {
+					// i = consume();
+					return true;
+				} else {
+					state = 1;
+				}
+				break;
+			case 1:
+				if (exprAnd1(i))
+					return true;
+				else
+					return false;
+				// break;
+			}
+		}
 	}
 
-	public void exprAnd1(int i) throws AnalyzerException {
-		if (tokens.get(i).getTokenType().equals(TokenType.And)) {
-			i = consume();
-			if (!exprEq(i))
-				throw new AnalyzerException("Expected exprEq at: " + tokens.get(i).getBegin() + " and at token: " + i);
-			exprOr1(i);
+	public boolean exprAnd1(int i) throws AnalyzerException {
+		int state = 0;
+		while (true) {
+			switch (state) {
+			case 0:
+				if (tokens.get(i).getTokenType().equals(TokenType.And)) {
+					state = 1;
+					i = consume();
+				} else {
+					return false;
+				}
+				break;
+			case 1:
+				if (exprEq(i)) {
+					exprAnd1(i);
+				} else
+					throw new AnalyzerException(
+							"Expected exprEq at: " + tokens.get(i).getBegin() + " and at token: " + i);
+			}
 		}
 	}
 
 	public boolean exprEq(int i) throws AnalyzerException {
-		if (!exprRel(i))
-			return false;
-		exprEq1(i);
-		return true;
+		int state = 0;
+		while (true) {
+			switch (state) {
+			case 0:
+				if (exprRel(i)) {
+					// i = consume();
+					return true;
+				} else {
+					state = 1;
+				}
+				break;
+			case 1:
+				if (exprEq1(i))
+					return true;
+				else
+					return false;
+				// break;
+			}
+		}
 	}
 
-	public void exprEq1(int i) throws AnalyzerException {
-		if (tokens.get(i).getTokenType().equals(TokenType.Equal)) {
-			i = consume();
-		} else if (tokens.get(i).getTokenType().equals(TokenType.ExclameEqual)) {
-			i = consume();
-		} else
-			return;
-		if (!exprRel(i))
-			throw new AnalyzerException("Expected exprRel at: " + tokens.get(i).getBegin() + " and at token: " + i);
-		exprEq1(i);
+	public boolean exprEq1(int i) throws AnalyzerException {
+		int state = 0;
+		while (true) {
+			switch (state) {
+			case 0:
+				if (tokens.get(i).getTokenType().equals(TokenType.Equal)) {
+					state = 1;
+					i = consume();
+				} else if (tokens.get(i).getTokenType().equals(TokenType.ExclameEqual)) {
+					state = 1;
+					i = consume();
+				} else {
+					return false;// nu prea influenteaza ca nu verificam nimic cu return true/false din exprEq1,
+									// exprOr1 etc...
+				}
+				break;
+			case 1:
+				if (exprRel(i)) {
+					exprEq1(i);
+				} else
+					throw new AnalyzerException(
+							"Expected exprRel at: " + tokens.get(i).getBegin() + " and at token: " + i);
+			}
+		}
 	}
 
 	public boolean exprRel(int i) throws AnalyzerException {
-		if (!exprAdd(i))
-			return false;
-		exprRel1(i);
-		return true;
+		int state = 0;
+		while (true) {
+			switch (state) {
+			case 0:
+				if (exprAdd(i)) {
+					// i = consume();
+					return true;
+				} else {
+					state = 1;
+				}
+				break;
+			case 1:
+				if (exprRel1(i))
+					return true;
+				else
+					return false;
+				// break;
+			}
+		}
 	}
 
-	public void exprRel1(int i) throws AnalyzerException {
-		if (tokens.get(i).getTokenType().equals(TokenType.Less)) {
-			i = consume();
-		} else if (tokens.get(i).getTokenType().equals(TokenType.LessEqual)) {
-			i = consume();
-		} else if (tokens.get(i).getTokenType().equals(TokenType.Greater)) {
-			i = consume();
-		} else if (tokens.get(i).getTokenType().equals(TokenType.GreaterEqual)) {
-			i = consume();
-		} else
-			return;
-		if (!exprAdd(i))
-			throw new AnalyzerException("Expected exprAdd at: " + tokens.get(i).getBegin() + " and at token: " + i);
-		exprRel1(i);
+	public boolean exprRel1(int i) throws AnalyzerException {
+		int state = 0;
+		while (true) {
+			switch (state) {
+			case 0:
+				if (tokens.get(i).getTokenType().equals(TokenType.Less)) {
+					state = 1;
+					i = consume();
+				} else if (tokens.get(i).getTokenType().equals(TokenType.LessEqual)) {
+					state = 1;
+					i = consume();
+				} else if (tokens.get(i).getTokenType().equals(TokenType.Greater)) {
+					state = 1;
+					i = consume();
+				} else if (tokens.get(i).getTokenType().equals(TokenType.GreaterEqual)) {
+					state = 1;
+					i = consume();
+				} else {
+					return false;// nu prea influenteaza ca nu verificam nimic cu return true/false din exprEq1,
+									// exprOr1 etc...
+				}
+				break;
+			case 1:
+				if (exprAdd(i)) {
+					exprRel1(i);
+				} else
+					throw new AnalyzerException(
+							"Expected exprAdd at: " + tokens.get(i).getBegin() + " and at token: " + i);
+			}
+		}
 	}
 
 	public boolean exprAdd(int i) throws AnalyzerException {
-		if (!exprMul(i))
-			return false;
-		exprAdd1(i);
-		return true;
+		int state = 0;
+		while (true) {
+			switch (state) {
+			case 0:
+				if (exprMul(i)) {
+					// i = consume();
+					return true;
+				} else {
+					state = 1;
+				}
+				break;
+			case 1:
+				if (exprAdd1(i))
+					return true;
+				else
+					return false;
+				// break;
+			}
+		}
 	}
 
-	public void exprAdd1(int i) throws AnalyzerException {
-		if (tokens.get(i).getTokenType().equals(TokenType.Plus)) {
-			i = consume();
-		} else if (tokens.get(i).getTokenType().equals(TokenType.Minus)) {
-			i = consume();
-		} else
-			return;
-		if (!exprMul(i))
-			throw new AnalyzerException("Expected exprMul at: " + tokens.get(i).getBegin() + " and at token: " + i);
-		exprAdd1(i);
+	public boolean exprAdd1(int i) throws AnalyzerException {
+		int state = 0;
+		while (true) {
+			switch (state) {
+			case 0:
+				if (tokens.get(i).getTokenType().equals(TokenType.Plus)) {
+					state = 1;
+					i = consume();
+				} else if (tokens.get(i).getTokenType().equals(TokenType.Minus)) {
+					state = 1;
+					i = consume();
+				} else {
+					return false;// nu prea influenteaza ca nu verificam nimic cu return true/false din exprEq1,
+									// exprOr1 etc...
+				}
+				break;
+			case 1:
+				if (exprMul(i)) {
+					exprAdd1(i);
+				} else
+					throw new AnalyzerException(
+							"Expected exprMul at: " + tokens.get(i).getBegin() + " and at token: " + i);
+			}
+		}
 	}
 
 	public boolean exprMul(int i) throws AnalyzerException {
-		if (!exprCast(i))
-			return false;
-		exprMul1(i);
-		return true;
+		int state = 0;
+		while (true) {
+			switch (state) {
+			case 0:
+				if (exprCast(i)) {
+					// i = consume();
+					return true;
+				} else {
+					state = 1;
+				}
+				break;
+			case 1:
+				if (exprMul1(i))
+					return true;
+				else
+					return false;
+				// break;
+			}
+		}
 	}
 
-	public void exprMul1(int i) throws AnalyzerException {
-		if (tokens.get(i).getTokenType().equals(TokenType.Multiply)) {
-			i = consume();
-		} else if (tokens.get(i).getTokenType().equals(TokenType.Divide)) {
-			i = consume();
-		} else
-			return;
-		if (!exprCast(i))
-			throw new AnalyzerException("Expected exprCast at: " + tokens.get(i).getBegin() + " and at token: " + i);
-		exprMul1(i);
+	public boolean exprMul1(int i) throws AnalyzerException {
+		int state = 0;
+		while (true) {
+			switch (state) {
+			case 0:
+				if (tokens.get(i).getTokenType().equals(TokenType.Multiply)) {
+					state = 1;
+					i = consume();
+				} else if (tokens.get(i).getTokenType().equals(TokenType.Divide)) {
+					state = 1;
+					i = consume();
+				} else {
+					return false;// nu prea influenteaza ca nu verificam nimic cu return true/false din exprEq1,
+									// exprOr1 etc...
+				}
+				break;
+			case 1:
+				if (exprCast(i)) {
+					exprMul1(i);
+					//There should be a return by checking the output of exprMul1 I think!
+				} else
+					throw new AnalyzerException(
+							"Expected exprCast at: " + tokens.get(i).getBegin() + " and at token: " + i);
+			}
+		}
 	}
+	// exprOr: exprOr OR exprAnd | exprAnd =
+	// Remove left recursion:
+	/*
+	 * eo -> eo OR ea | ea eo -> ea eo1 eo1 -> OR ea eo1 | Epsilon Epsilon means
+	 * recursion stops... in our case it is exprPrimary
+	 */
+	/*
+	 * exprPostfix: exprPostfix LBRACKET expr RBRACKET | exprPostfix DOT ID |
+	 * exprPrimary ;
+	 * 
+	 * A-> A alfa1 | A alfa2 | B
+	 * 
+	 * A -> A alfa1 | B A -> A alfa2 | B
+	 * 
+	 * A -> B A' A -> B A' A'-> alfa1 A'|Eps A'->alfa2 A'|Eps
+	 * 
+	 * ->
+	 * 
+	 */
+	/*
+	 * exprPo -> exprPr exprPo1 exprPo1 -> alfa1 else alfa2 exprPr exprPo1
+	 */
 
 	public boolean exprPostfix(int i) throws AnalyzerException {
-		if (!exprPrimary(i))
-			return false;
-		exprPostfix1();
-		return true;
+		int state = 0;
+		while (true) {
+			switch (state) {
+			case 0:
+				if (exprPrimary(i)) {
+					// i = consume();
+					return true;
+				} else {
+					state = 1;
+				}
+				break;
+			case 1:
+				if (exprPostfix1(i))
+					return true;
+				return false;// FALSE@@@ and for all of the follow
+			// break;
+			}
+		}
 	}
 
-	public void exprPostfix1() throws AnalyzerException {
-		if (tokens.get(i).getTokenType().equals(TokenType.OpenStraightBrace)) {
-			if (!expr(i))
-				throw new AnalyzerException(
-						"Expected exprCast at: " + tokens.get(i).getBegin() + " and at token: " + i);
-			if (!tokens.get(i).getTokenType().equals(TokenType.CloseStraightBrace))
-				throw new AnalyzerException(
-						"Expected exprCast at: " + tokens.get(i).getBegin() + " and at token: " + i);
-			else
-				i = consume();
-		} else if (tokens.get(i).getTokenType().equals(TokenType.Dot)) {
-			if (!tokens.get(i).getTokenType().equals(TokenType.Identifier))
-				throw new AnalyzerException(
-						"Expected exprCast at: " + tokens.get(i).getBegin() + " and at token: " + i);
-			else
-				i = consume();
-		} else
-			return;
-		exprPostfix1();
+	public boolean exprPostfix1(int i) throws AnalyzerException {
+		int state = 0;
+		// int i_backup;
+		while (true) {
+			switch (state) {
+			case 0:
+				if (tokens.get(i).getTokenType().equals(TokenType.OpenStraightBrace)) {
+					// i_backup = i;
+					state = 1;
+					i = consume();
+				} else if (tokens.get(i).getTokenType().equals(TokenType.Dot)) {
+					state = 3;
+					i = consume();
+				} else {
+					return false;
+				}
+				break;
+			case 1:
+				if (expr(i)) {
+					i = consume();
+				} else {
+					throw new AnalyzerException(
+							"Expected expr at: " + tokens.get(i).getBegin() + " and at token: " + i);
+				}
+				break;
+			case 2:
+				if (tokens.get(i).getTokenType().equals(TokenType.CloseStraightBrace)) {
+					state = 6;
+					i = consume();
+				}
+			case 3:
+				if (tokens.get(i).getTokenType().equals(TokenType.Identifier)) {
+					state = 6;
+					i = consume();
+				} else {
+					throw new AnalyzerException(
+							"Expected expr at: " + tokens.get(i).getBegin() + " and at token: " + i);
+				}
+
+			case 6:
+				if (exprPrimary(i)) {
+					exprPostfix1(i);
+				} else
+					throw new AnalyzerException(
+							"Expected exprAnd at: " + tokens.get(i).getBegin() + " and at token: " + i);
+			}
+		}
 	}
+
 }
