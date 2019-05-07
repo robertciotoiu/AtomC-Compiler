@@ -794,7 +794,6 @@ public class SyntacticAnalyzer {
 				if (expr(i)) {
 					state = 1;
 					 i = this.i;
-					//i = consume();
 				} else {
 					state = 1;
 				}
