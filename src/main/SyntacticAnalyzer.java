@@ -65,7 +65,7 @@ public class SyntacticAnalyzer {
 			case 4:
 				if (tokens.get(i).getTokenType().equals(TokenType.END)) {
 					System.out.println("End of program\nThe program has been successfuly compilated");
-					break;
+					return;
 				} else {
 					throw new AnalyzerException("Expected END" + i, i);
 				}
