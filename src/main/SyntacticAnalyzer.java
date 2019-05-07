@@ -25,29 +25,37 @@ public class SyntacticAnalyzer {
 	// syntax from CT lab
 	public void unit(int i) throws AnalyzerException {
 		// unit: ( declStruct | declFunc | declVar )* END ;
+		int backup;
 		int state = 1;
 		while (true) {
 			switch (state) {
 			case 1:
+				backup = i;
 				if (declStruct(i))// true
 				{
 					state = 1;
+					//i = this.i;
 					i = consume();
 				} else {
 					state = 2;
+					this.i = backup;
 				}
 				break;
 			case 2:
+				backup = i;
 				if (declFunc(i)) {
 					state = 1;
+					//i = this.i;
 					i = consume();
 				} else {
+					this.i = i;
 					state = 3;
 				}
 				break;
 			case 3:
 				if (declVar(i)) {
 					state = 1;
+					//i = this.i;
 					i = consume();
 				} else {
 					state = 4;
@@ -92,16 +100,22 @@ public class SyntacticAnalyzer {
 				if (tokens.get(i).getTokenType().equals(TokenType.OpeningCurlyBrace)) {
 					state = 3;
 					i = consume();
-				} else if (tokens.get(i).getTokenType().equals(TokenType.Identifier)) {
-					return false;
-				} else {
-					throw new AnalyzerException(
-							"Expected OpeningCurlyBrace" + tokens.get(i).getBegin() + " and at token: " + i);
 				}
+				else
+				{
+					return false;
+				}
+//				} else if (tokens.get(i).getTokenType().equals(TokenType.Identifier)) {
+//					return false;
+//				} else {
+//					throw new AnalyzerException(
+//							"Expected OpeningCurlyBrace" + tokens.get(i).getBegin() + " and at token: " + i);
+//				}
 				break;
 			case 3:
 				if (declVar(i)) {
 					state = 3;
+					i = this.i;
 					// i = consume();
 				} else if (tokens.get(i).getTokenType().equals(TokenType.ClosingCurlyBrace)) {
 					state = 4;
@@ -132,7 +146,8 @@ public class SyntacticAnalyzer {
 			case 0:
 				if (typeBase(i)) {
 					state = 1;
-					i = consume();
+					i = this.i;
+					//i = consume();
 				} else {
 					return false;
 					// throw new AnalyzerException("Expected typeBase at:
@@ -151,7 +166,8 @@ public class SyntacticAnalyzer {
 			case 2:
 				if (arrayDecl(i)) {
 					state = 2;
-					i = consume();
+					i = this.i;
+					//i = consume();
 				} else {
 					state = 3;// no array, just skip
 				}
@@ -162,6 +178,7 @@ public class SyntacticAnalyzer {
 					state = 4;
 					i = consume();
 				} else if (tokens.get(i).getTokenType().equals(TokenType.Semicolon)) {
+					i = consume();
 					return true;
 				} else {
 					throw new AnalyzerException(
@@ -180,7 +197,8 @@ public class SyntacticAnalyzer {
 			case 5:
 				if (arrayDecl(i)) {
 					state = 5;
-					i = consume();
+					i = this.i;
+					//i = consume();
 				} else {
 					state = 3;// no array, go back to case 3 to check if: another declVar or semicolon
 					// i++;//not sure
@@ -198,21 +216,25 @@ public class SyntacticAnalyzer {
 			case 0:
 				if (tokens.get(i).getTokenType().equals(TokenType.Int)) {
 					state = 1;
+					i = consume();
 					// i++;
 					// this.i = i;
 					return true;
 				} else if (tokens.get(i).getTokenType().equals(TokenType.Double)) {
 					state = 1;
+					i = consume();
 					// i++;
 					// this.i = i;
 					return true;
 				} else if (tokens.get(i).getTokenType().equals(TokenType.Char)) {
 					state = 1;
+					i = consume();
 					// i++;
 					// this.i = i;
 					return true;
 				} else if (tokens.get(i).getTokenType().equals(TokenType.Struct)) {
 					state = 1;
+					i = consume();
 					// i++;
 				} else {
 					return false;
@@ -221,7 +243,8 @@ public class SyntacticAnalyzer {
 				}
 			case 1:
 				if (tokens.get(i).getTokenType().equals(TokenType.Identifier)) {
-					this.i = i;
+					i = consume();
+					//this.i = i;
 					return true;
 				} else {
 					throw new AnalyzerException(
@@ -233,6 +256,7 @@ public class SyntacticAnalyzer {
 
 	public boolean arrayDecl(int i) throws AnalyzerException {
 		int state = 0;
+		int backup;
 		while (true) {
 			switch (state) {
 			case 0:
@@ -246,12 +270,14 @@ public class SyntacticAnalyzer {
 				}
 				break;
 			case 1:
+				backup = i;
 				if (expr(i)) {
 					state = 2;
-					i = consume();
+					this.i = i;
+					//i = consume();
 				} else {
 					state = 2;
-
+					this.i = backup;
 					// i = consume();
 					// throw new AnalyzerException("Expected expr at: "+ tokens.get(i).getBegin()+"
 					// and at token: " +i);
@@ -303,7 +329,8 @@ public class SyntacticAnalyzer {
 			case 0:
 				if (typeBase(i)) {
 					state = 1;// verify if type
-					i = consume();
+					i = this.i;
+					//i = consume();
 				} else {
 					state = 2;// verify if it's void
 				}
@@ -321,6 +348,7 @@ public class SyntacticAnalyzer {
 					state = 3;
 					i = consume();
 				} else {
+					return false;
 					// throw new AnalyzerException("Expected typeBase or void at: ",
 					// tokens.get(i).getBegin());
 				}
@@ -627,7 +655,7 @@ public class SyntacticAnalyzer {
 				if (expr(i)) {// aici in caz de i = 10 noua ne parcurge doar i si se intoarce la = si aici se
 								// mai incrementeaza si dupa asteapta ;
 					state = 3;
-					i = consume();
+					i = this.i;
 				} else {
 					state = 3;
 				}
@@ -642,12 +670,15 @@ public class SyntacticAnalyzer {
 				}
 				break;
 			case 4:
+				int i_backup = i;
 				if (expr(i)) {
 					state = 5;
-					i = consume();
+					this.i = i;
+					//i = consume();
 					// i = this.i;
 				} else {
-					i = this.i;
+					i = i_backup;
+					this.i = i;
 					state = 5;
 				}
 				break;
@@ -846,6 +877,7 @@ public class SyntacticAnalyzer {
 				} else {
 					state = 3;// is exprOr
 					 i = i_branch2;
+					 this.i = i;
 					// this.i = i;
 				}
 				break;
@@ -1013,7 +1045,8 @@ public class SyntacticAnalyzer {
 			case 2:
 				if (expr(i)) {
 					state = 3;
-					i = consume();
+					i = this.i;
+					//i = consume();
 				} else {
 					state = 3;
 					if (i_backup != 0) {
@@ -1035,7 +1068,8 @@ public class SyntacticAnalyzer {
 			case 4:
 				if (expr(i)) {
 					state = 3;
-					i = consume();
+					i = this.i;
+					//i = consume();
 				} else {
 					throw new AnalyzerException(
 							"Expected expr at: " + tokens.get(i).getBegin() + " and at token: " + i);
@@ -1044,7 +1078,8 @@ public class SyntacticAnalyzer {
 			case 6:
 				if (expr(i)) {
 					state = 7;
-					i = consume();
+					i = this.i;
+					//i = consume();
 				} else {
 					throw new AnalyzerException(
 							"Expected expr at: " + tokens.get(i).getBegin() + " and at token: " + i);
@@ -1332,7 +1367,7 @@ public class SyntacticAnalyzer {
 				if (exprCast(i)) {
 					// i = consume();
 					i = this.i;
-					return true;
+					state = 1;
 				} else {
 					state = 1;
 				}
@@ -1359,8 +1394,7 @@ public class SyntacticAnalyzer {
 					state = 1;
 					i = consume();
 				} else {
-					return false;// nu prea influenteaza ca nu verificam nimic cu return true/false din exprEq1,
-									// exprOr1 etc...
+					return false;//
 				}
 				break;
 			case 1:
@@ -1442,7 +1476,8 @@ public class SyntacticAnalyzer {
 			case 1:
 				if (expr(i)) {
 					state = 2;
-					i = consume();
+					i = this.i;
+					//i = consume();
 				} else {
 					throw new AnalyzerException(
 							"Expected expr at: " + tokens.get(i).getBegin() + " and at token: " + i);

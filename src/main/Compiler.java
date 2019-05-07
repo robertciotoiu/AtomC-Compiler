@@ -73,7 +73,7 @@ public class Compiler {
 	
 	public static void main(String args[]) throws IOException, AnalyzerException
 	{
-		Compiler c = new Compiler("C:\\Users\\Robi\\Desktop\\tests\\6.c");
+		Compiler c = new Compiler("C:\\Users\\Robi\\Desktop\\tests\\9.c");
 		c.compile(c.getCode());
 		
 	}
