@@ -45,8 +45,8 @@ public class SyntacticAnalyzer {
 				backup = i;
 				if (declFunc(i)) {
 					state = 1;
-					// i = this.i;
-					i = consume();
+					 i = this.i;
+					//i = consume();
 				} else {
 					this.i = i;
 					state = 3;
@@ -695,7 +695,8 @@ public class SyntacticAnalyzer {
 			case 6:
 				if (expr(i)) {
 					state = 7;
-					i = consume();
+					i = this.i;
+					//i = consume();
 				} else {
 					state = 7;
 				}
@@ -736,6 +737,7 @@ public class SyntacticAnalyzer {
 				break;
 			case 1:
 				if (tokens.get(i).getTokenType().equals(TokenType.Semicolon)) {
+					i = consume();
 					return true;
 				} else {
 					throw new AnalyzerException(
@@ -763,13 +765,15 @@ public class SyntacticAnalyzer {
 			case 1:
 				if (expr(i)) {
 					state = 2;
-					i = consume();
+					i = this.i;
+					//i = consume();
 				} else {
 					state = 2;
 				}
 				break;
 			case 2:
 				if (tokens.get(i).getTokenType().equals(TokenType.Semicolon)) {
+					i = consume();
 					return true;
 				} else {
 					throw new AnalyzerException(
@@ -794,6 +798,7 @@ public class SyntacticAnalyzer {
 				break;
 			case 1:
 				if (tokens.get(i).getTokenType().equals(TokenType.Semicolon)) {
+					i = consume();
 					return true;
 				} else {
 					return false;
@@ -835,6 +840,7 @@ public class SyntacticAnalyzer {
 				break;
 			case 2:
 				if (tokens.get(i).getTokenType().equals(TokenType.ClosingCurlyBrace)) {
+					i = consume();
 					return true;
 				} else {
 					return false;
@@ -1399,7 +1405,7 @@ public class SyntacticAnalyzer {
 					i = consume();
 				} else {
 					throw new AnalyzerException(
-							"Expected expr at: " + tokens.get(i).getBegin() + " and at token: " + i);
+							"Expected Identifier at: " + tokens.get(i).getBegin() + " and at token: " + i);
 				}
 
 			case 6:
