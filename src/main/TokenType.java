@@ -32,6 +32,9 @@ package main;
 		Divide,
 
 //		Point,
+		LessEqual,
+		
+		GreaterEqual,
 
 		EqualEqual,
 
@@ -95,10 +98,6 @@ package main;
 		OpenStraightBrace,
 		
 		CloseStraightBrace,
-		
-		LessEqual,
-		
-		GreaterEqual,
 		
 		Dot,
 		

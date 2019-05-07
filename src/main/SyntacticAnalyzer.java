@@ -501,7 +501,7 @@ public class SyntacticAnalyzer {
 				}
 				break;
 			case 6:
-				if (exprStm(i)) {
+				if (exprStm(i)) {//aici e prob
 					return true;
 				} else {
 					return false;
@@ -535,7 +535,8 @@ public class SyntacticAnalyzer {
 			case 2:
 				if (expr(i)) {
 					state = 3;
-					i = consume();
+					//i = consume();
+					i = this.i;
 				} else {
 					throw new AnalyzerException(
 							"Expected expr at: " + tokens.get(i).getBegin() + " and at token: " + i);
@@ -553,7 +554,8 @@ public class SyntacticAnalyzer {
 			case 4:
 				if (stm(i)) {
 					state = 5;
-					i = consume();
+					i = this.i;
+					//i = consume();
 				} else {
 					throw new AnalyzerException("Expected stm at: " + tokens.get(i).getBegin() + " and at token: " + i);
 				}
@@ -791,7 +793,8 @@ public class SyntacticAnalyzer {
 			case 0:
 				if (expr(i)) {
 					state = 1;
-					i = consume();
+					 i = this.i;
+					//i = consume();
 				} else {
 					state = 1;
 				}
@@ -1366,9 +1369,11 @@ public class SyntacticAnalyzer {
 			return true;
 		return false;// FALSE@@@ and for all of the follow
 	}
+	//int double_check = 1;
 
 	public boolean exprPostfix1(int i) throws AnalyzerException {
 		int state = 0;
+		//double_check = 1;
 		// int i_backup;
 		while (true) {
 			switch (state) {
@@ -1399,6 +1404,7 @@ public class SyntacticAnalyzer {
 					state = 6;
 					i = consume();
 				}
+				break;
 			case 3:
 				if (tokens.get(i).getTokenType().equals(TokenType.Identifier)) {
 					state = 6;
@@ -1409,15 +1415,19 @@ public class SyntacticAnalyzer {
 				}
 
 			case 6:
-				if (exprPrimary(i)) {
+				if (exprPrimary(i)) {//||double_check!=3) {
 					i = this.i;
+					//double_check ++;
 					if (exprPostfix1(i))
+					{
 						return true;
+					}
 					else
 						return false;
 				} else
-					throw new AnalyzerException(
-							"Expected exprPrimary at: " + tokens.get(i).getBegin() + " and at token: " + i);
+					return false;
+//					throw new AnalyzerException(
+//							"Expected exprPrimary at: " + tokens.get(i).getBegin() + " and at token: " + i);
 			}
 		}
 	}
